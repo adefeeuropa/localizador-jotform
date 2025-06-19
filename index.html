@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Geolocalizador de País</title>
+    <style>
+        /* Estilos para que o resultado apareça limpo, sem margens ou fundos */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif, Arial; /* Fonte parecida com a do JotForm */
+            font-size: 16px;
+            color: #2c3345; /* Cor de texto do JotForm */
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            height: 100%;
+        }
+        #country-display {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="country-display">A obter localização...</div>
+
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAusppd4ru3E8t-QQRJNWjiiOQVFl8HNl8&libraries=geocoding">
+    </script>
+
+    <script>
+        // Função principal que é executada assim que a página carrega
+        window.onload = function() {
+            const display = document.getElementById('country-display');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        display.textContent = 'A processar...';
+                        geocodeLatLng(position.coords.latitude, position.coords.longitude);
+                    },
+                    () => {
+                        display.textContent = 'Permissão de localização negada.';
+                    }
+                );
+            } else {
+                display.textContent = 'Geolocalização não suportada.';
+            }
+        };
+
+        // Função que usa o Geocoder do Google para obter o endereço
+        function geocodeLatLng(lat, lng) {
+            // Espera até que a API do Google esteja carregada
+            if (typeof google === 'object' && typeof google.maps === 'object') {
+                const geocoder = new google.maps.Geocoder();
+                const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
+                const display = document.getElementById('country-display');
+
+                geocoder.geocode({ location: latlng }, (results, status) => {
+                    if (status === "OK") {
+                        if (results[0]) {
+                            // Procura o componente "country" na resposta da API
+                            for (const component of results[0].address_components) {
+                                if (component.types.includes("country")) {
+                                    display.textContent = component.long_name;
+                                    return;
+                                }
+                            }
+                            display.textContent = 'País não encontrado na resposta.';
+                        } else {
+                            display.textContent = 'Nenhum resultado encontrado.';
+                        }
+                    } else {
+                        display.textContent = "Geocoder falhou: " + status;
+                    }
+                });
+            } else {
+                 // Tenta novamente se a API do Google ainda não carregou
+                setTimeout(() => geocodeLatLng(lat, lng), 500);
+            }
+        }
+    </script>
+</body>
+</html>
