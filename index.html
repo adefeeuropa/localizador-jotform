@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Geolocalizador de País por IP</title>
     <style>
-        /* Mesmos estilos para um aspeto limpo */
         body, html {
             margin: 0;
             padding: 0;
@@ -26,18 +25,27 @@
     <div id="country-display">A detetar o seu país...</div>
 
     <script>
-        // Função que é executada assim que a página carrega
+        // ======================================================================
+        //   COLE A SUA CHAVE DA API DO IPGEOLOCATION.IO AQUI EM BAIXO
+        // ======================================================================
+        const apiKey = 'a5c838f2a099472aad172e90fd2bc79c';
+
+
+        // Função para obter o país usando o serviço ipgeolocation.io
         async function getCountryByIP() {
             const display = document.getElementById('country-display');
+            
+            if (apiKey === 'SUA_CHAVE_API_AQUI') {
+                display.textContent = 'Erro: A chave da API não foi configurada no código.';
+                return;
+            }
+
             try {
-                // Usamos um serviço gratuito de geolocalização por IP (ip-api.com)
-                // É fiável e não requer chave de API
-                const response = await fetch('https://ip-api.com/json/?fields=status,country,message');
+                const response = await fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}`);
                 const data = await response.json();
 
-                if (data.status === 'success') {
-                    // Se a deteção for bem-sucedida, mostra o nome do país
-                    display.textContent = data.country;
+                if (data && data.country_name) {
+                    display.textContent = data.country_name;
                 } else {
                     display.textContent = 'Não foi possível detetar o país.';
                 }
