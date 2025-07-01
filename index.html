@@ -2,27 +2,17 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Compra do Livro: Uma Vida de Decisões</title>
+  <title>Redirecionando para o Formulário da ADEFE</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Redirecionando com segurança para o formulário oficial do livro Uma Vida de Decisões - ADEFE.">
-  
-  <!-- Segurança e compatibilidade -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://api.ipgeolocation.io; script-src 'self'; style-src 'self' 'unsafe-inline';">
-  <meta http-equiv="Strict-Transport-Security" content="max-age=63072000; includeSubDomains; preload">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body, html {
-      font-family: 'Segoe UI', 'Inter', sans-serif, Arial;
-      font-size: 15px;
-      color: #333;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f7f7;
       text-align: center;
       padding-top: 20vh;
-      background-color: #f9f9f9;
+      color: #333;
     }
   </style>
 </head>
@@ -31,26 +21,37 @@
 
   <script>
     const jotformUrl = 'https://form.jotform.com/adm.adefeeuropa/pedido-umavidadedecises';
-    const urlParameterName = 'pais';
-    const apiKey = 'a5c838f2a099472aad172e90fd2bc79c';
+    const apiKey = 'a5c838f2a099472aad172e90fd2bc79c';  
+    const paramName = 'pais';
 
-    async function processGeolocation() {
+    async function redirecionarComGeo() {
+      let redirecionado = false;
+
+      // Fallback de segurança caso algo trave (3 segundos)
+      setTimeout(() => {
+        if (!redirecionado) {
+          window.location.href = `${jotformUrl}?${paramName}=desconhecido`;
+        }
+      }, 3000);
+
       try {
         const response = await fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}`);
+        if (!response.ok) throw new Error('Resposta inválida da API');
+
         const data = await response.json();
+        const country = data.country_name || 'desconhecido';
 
-        let country = data && data.country_name ? data.country_name : 'desconhecido';
-        const redirectUrl = `${jotformUrl}?${urlParameterName}=${encodeURIComponent(country)}`;
-        window.location.replace(redirectUrl);
-
-      } catch (e) {
-        console.error('Erro ao detectar país, redirecionando mesmo assim:', e);
-        const fallbackUrl = `${jotformUrl}?${urlParameterName}=desconhecido`;
-        window.location.replace(fallbackUrl);
+        redirecionado = true;
+        window.location.href = `${jotformUrl}?${paramName}=${encodeURIComponent(country)}`;
+      } catch (error) {
+        console.error('Erro na geolocalização:', error);
+        if (!redirecionado) {
+          window.location.href = `${jotformUrl}?${paramName}=desconhecido`;
+        }
       }
     }
 
-    window.addEventListener('load', processGeolocation);
+    window.addEventListener('load', redirecionarComGeo);
   </script>
 </body>
 </html>
